@@ -7,18 +7,23 @@ let package = Package(
         .macOS(.v13)
     ],
     products: [
-        .executable(name: "CityGeneratorServer", targets: ["App"])
+        .executable(name: "CityGeneratorServer", targets: ["Run"])
     ],
     dependencies: [
         .package(url: "https://github.com/vapor/vapor.git", from: "4.92.0")
     ],
     targets: [
-        .executableTarget(
+        .target(
             name: "App",
             dependencies: [
                 .product(name: "Vapor", package: "vapor")
             ],
-            path: "Sources"
+            path: "Sources/App"
+        ),
+        .executableTarget(
+            name: "Run",
+            dependencies: ["App"],
+            path: "Sources/Run"
         ),
         .testTarget(
             name: "AppTests",

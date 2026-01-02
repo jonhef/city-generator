@@ -23,7 +23,7 @@ final class GenerationController {
             throw Abort(.badRequest, reason: "Missing city identifier")
         }
         let path = try await generator.summaryPath(for: id, on: req.eventLoop).get()
-        return req.fileio.streamFile(at: path.path)
+        return try await req.fileio.asyncStreamFile(at: path.path)
     }
 
     func getModel(req: Request) async throws -> Response {
@@ -31,6 +31,6 @@ final class GenerationController {
             throw Abort(.badRequest, reason: "Missing city identifier")
         }
         let path = try await generator.modelPath(for: id, on: req.eventLoop).get()
-        return req.fileio.streamFile(at: path.path)
+        return try await req.fileio.asyncStreamFile(at: path.path)
     }
 }
