@@ -1,5 +1,5 @@
 CXX = clang++
-CXXFLAGS = -std=c++17 -O2 -Wall -Iinclude
+CXXFLAGS = -std=c++17 -O3 -Wall -Iinclude
 
 SRC = $(wildcard src/*.cpp)
 OBJ = $(SRC:.cpp=.o)
