@@ -140,6 +140,34 @@ class TestCityGenerator(unittest.TestCase):
         self.assertGreaterEqual(ratio, 8.0,
             f"Green space per capita {ratio:.2f} m^2 is below the recommended minimum")
 
+    def test_accessibility_constraints(self):
+        """Residential parcels should be within a reasonable distance to schools and hospitals."""
+        radius_fraction = 0.8
+        grid_size = 100
+        data = run_generator(population=60000, hospitals=2, schools=6, seed=21,
+                             grid_size=grid_size, radius=radius_fraction)
+        city_radius = (grid_size * radius_fraction) / 2.0
+        max_allowed_school = city_radius * 1.25  # generous but bounded
+        max_allowed_hospital = city_radius * 1.95
+        self.assertGreaterEqual(data["maxDistanceToSchool"], 0.0,
+                                "No school reachable from residential parcels")
+        self.assertGreaterEqual(data["maxDistanceToHospital"], 0.0,
+                                "No hospital reachable from residential parcels")
+        self.assertLessEqual(data["maxDistanceToSchool"], max_allowed_school,
+                             "Schools are too far from residential parcels")
+        self.assertLessEqual(data["maxDistanceToHospital"], max_allowed_hospital,
+                             "Hospitals are too far from residential parcels")
+
+    def test_height_limits_by_zone(self):
+        """Building heights should respect zoning caps."""
+        data = run_generator(population=40000, hospitals=1, schools=4, seed=33)
+        self.assertLessEqual(data["maxResidentialHeight"], 12,
+                             "Residential height cap exceeded")
+        self.assertLessEqual(data["maxCommercialHeight"], 40,
+                             "Commercial height cap exceeded")
+        self.assertLessEqual(data["maxIndustrialHeight"], 14,
+                             "Industrial height cap exceeded")
+
 
 if __name__ == '__main__':
     unittest.main()

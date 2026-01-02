@@ -18,13 +18,13 @@
 Procedural generation is a powerful technique for synthesising complex content from
 compact rules and random seeds.  In the context of urban environments this
 approach allows one to create vast, unique cityscapes on demand, useful for
-games, simulations and urban planning studies【17†L19-L27】.  We present a
+games, simulations and urban planning studies[17†L19-L27].  We present a
 modular prototype for procedural city generation that transforms high‑level
 parameters—population, numbers of hospitals and schools, a primary transport
 mode and a random seed—into a complete three‑dimensional model of a city.
 Our generator adheres to a handful of basic urban planning guidelines, such
-as minimum green space per inhabitant【26†L7-L10】 and the distribution of
-educational and healthcare facilities【25†L825-L834】.  The implementation
+as minimum green space per inhabitant[26†L7-L10] and the distribution of
+educational and healthcare facilities[25†L825-L834].  The implementation
 employs C++ for performance and a Python wrapper for ease of use, and
 includes integration tests verifying determinism and rule compliance.  This
 paper summarises the design, algorithm and implementation of the generator.
@@ -35,9 +35,9 @@ Cities arise from a complex interplay of geography, economics and societal
 forces.  Modelling such complexity procedurally requires simplifying
 assumptions and rules that nevertheless produce believable results.  Prior
 work on procedural city generation has explored grid‑based and agent
-approaches【17†L17-L25】, multi‑zone models inspired by the Burgess concentric
-zone theory【18†L67-L75】, and noise‑driven growth akin to terrain
-generation in Minecraft【21†L92-L100】.  Our goal is to design a generator
+approaches[17†L17-L25], multi‑zone models inspired by the Burgess concentric
+zone theory[18†L67-L75], and noise‑driven growth akin to terrain
+generation in Minecraft[21†L92-L100].  Our goal is to design a generator
 that, while simplified, produces cities that obey some well‑known urban
 planning principles and remain reproducible under a fixed seed.
 
@@ -53,8 +53,8 @@ The generator accepts several high‑level parameters:
         hospitals and primary schools should exist.  These facilities are
         distributed across residential and commercial zones to ensure
         coverage; in practice one hospital per about 100~000–120~000 people is
-        recommended【14†L318-L326】 and one primary school per 6~000–10~000
-        residents【25†L825-L834】.
+        recommended[14†L318-L326] and one primary school per 6~000–10~000
+        residents[25†L825-L834].
   \item \textbf{Primary transport mode.}  The dominant mode of transport
         (car, transit or walking) influences the road network layout.  In this
         prototype we generate a simple cross and two ring roads, but the
@@ -76,15 +76,15 @@ basic planning rules drawn from the literature:
 
 \paragraph{Green space per inhabitant.}  World Health Organization guidelines
 recommend at least 8~m$^2$ of accessible green space per inhabitant in
-cities【26†L7-L10】.  Our generator calculates the total area of green cells
+cities[26†L7-L10].  Our generator calculates the total area of green cells
 given an assumed cell area (100~m~$\times$~100~m) and the population; if the
 initial zoning yields too few green cells, random residential or industrial
 lots are converted to parks until the target is met.
 
 \paragraph{Education and health.}  Access to schools and healthcare should be
 ubiquitous.  Primary schools are typically located within 500–1000~m of
-residences and serve roughly 6~000–10~000 people【25†L825-L834】.  Hospitals
-should serve about 100~000–120~000 people【14†L318-L326】.  We simply place
+residences and serve roughly 6~000–10~000 people[25†L825-L834].  Hospitals
+should serve about 100~000–120~000 people[14†L318-L326].  We simply place
 the user‑specified number of facilities at random within residential and
 commercial zones; more sophisticated placement (e.g. ensuring maximum
 distance constraints) is a topic for future work.
@@ -113,7 +113,7 @@ The generation pipeline follows the steps below:
         ring roads at 50\% and 90\% of the developed radius.  Each road is
         represented as a set of line segments; more complex networks could
         be generated following the radial or grid patterns discussed in
-        prior work【17†L17-L25】.
+        prior work[17†L17-L25].
   \item \textbf{Output.}  The final city is serialised into two formats: a
         Wavefront OBJ mesh where each non‑green lot becomes a cuboid, and a
         JSON summary containing high‑level counts for testing and analysis.
@@ -147,7 +147,7 @@ implementation.  The tests compile the C++ code, run the generator with
 various configurations and inspect the JSON summaries.  They verify that
 identical seeds yield identical summaries (determinism), that the counts of
 hospitals and schools match the configuration, and that the green space
-allocated meets or exceeds the recommended minimum per capita【26†L7-L10】.
+allocated meets or exceeds the recommended minimum per capita[26†L7-L10].
 Future tests could enforce maximum walking distances to facilities and
 compare generated road networks against reference patterns.
 
@@ -158,7 +158,7 @@ simple urban planning rules—minimum green space, basic facility provision
 and a rudimentary road network—the generated cities avoid some of the
 pathologies of purely random constructions.  Nevertheless, there is
 tremendous scope for refinement: incorporating more realistic noise,
-simulating growth dynamics【22†L23-L39】, enforcing service access
+simulating growth dynamics[22†L23-L39], enforcing service access
 constraints, and adding variety in building geometry.  We hope this
 prototype serves as a foundation for further experimentation and as a
 teaching aid for procedural content generation.
@@ -168,20 +168,20 @@ teaching aid for procedural content generation.
 \bibitem{Sahinoglu2022}
 Sahinoglu, B. Y., \& Celikcan, U. (2022). A grid‑based multi‑zone Burgess
 approach for fast procedural city generation from scratch. \emph{Mugla
-Journal of Science and Technology}, 8(1), 8–18.【17†L17-L25】【18†L67-L75】
+Journal of Science and Technology}, 8(1), 8–18.[17†L17-L25][18†L67-L75]
 
 \bibitem{WHO2024}
 World Health Organization.  (2024).  Guidelines for healthcare facilities.
-\emph{BMJ Open}, 14, e000000.【14†L318-L326】
+\emph{BMJ Open}, 14, e000000.[14†L318-L326]
 
 \bibitem{MDPI2023}
 MDPI Sustainability Journal.  (2023).  Role of urban planning standards in
 improving lifestyle in a sustainable system.  Sections on infrastructure
-planning standards and green space requirements.【25†L825-L834】【26†L7-L10】
+planning standards and green space requirements.[25†L825-L834][26†L7-L10]
 
 \bibitem{MinecraftTerrain}
 Cybrancee Blog.  (2025).  How Minecraft terrain generation works.  Retrieved
-from the author's website.【21†L92-L100】
+from the author's website.[21†L92-L100]
 
 \end{thebibliography}
 

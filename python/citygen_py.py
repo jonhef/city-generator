@@ -137,6 +137,44 @@ def generate(config: Config) -> Dict[str, int]:
         return placed
     place(config.num_hospitals, FacilityType.HOSPITAL)
     place(config.num_schools, FacilityType.SCHOOL)
+    # Derive accessibility metrics
+    school_cells = [i for i, f in enumerate(facility_flags) if f == FacilityType.SCHOOL]
+    hospital_cells = [i for i, f in enumerate(facility_flags) if f == FacilityType.HOSPITAL]
+    def cell_center(idx: int) -> Tuple[float, float]:
+        x = (idx % size) + 0.5
+        y = (idx // size) + 0.5
+        return (x, y)
+    def nearest_distance(idx: int, targets: List[int]) -> float:
+        if not targets:
+            return -1.0
+        cx, cy = cell_center(idx)
+        best = float("inf")
+        for t in targets:
+            tx, ty = cell_center(t)
+            d = math.hypot(cx - tx, cy - ty)
+            if d < best:
+                best = d
+        return best
+    max_dist_school = -1.0
+    max_dist_hospital = -1.0
+    max_res_height = 0
+    max_com_height = 0
+    max_ind_height = 0
+    for i, z in enumerate(zones):
+        if z == Zone.RESIDENTIAL:
+            max_res_height = max(max_res_height, heights[i])
+            if school_cells:
+                d = nearest_distance(i, school_cells)
+                if d > max_dist_school:
+                    max_dist_school = d
+            if hospital_cells:
+                d = nearest_distance(i, hospital_cells)
+                if d > max_dist_hospital:
+                    max_dist_hospital = d
+        elif z == Zone.COMMERCIAL:
+            max_com_height = max(max_com_height, heights[i])
+        elif z == Zone.INDUSTRIAL:
+            max_ind_height = max(max_ind_height, heights[i])
     # Compute summary
     summary = {
         "gridSize": size,
@@ -148,5 +186,10 @@ def generate(config: Config) -> Dict[str, int]:
         "undevelopedCells": sum(1 for z in zones if z == Zone.NONE),
         "numHospitals": sum(1 for f in facility_flags if f == FacilityType.HOSPITAL),
         "numSchools": sum(1 for f in facility_flags if f == FacilityType.SCHOOL),
+        "maxDistanceToSchool": max_dist_school,
+        "maxDistanceToHospital": max_dist_hospital,
+        "maxResidentialHeight": max_res_height,
+        "maxCommercialHeight": max_com_height,
+        "maxIndustrialHeight": max_ind_height,
     }
     return summary

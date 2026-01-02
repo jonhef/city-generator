@@ -45,6 +45,8 @@ struct Config {
 
     // ===== Output =====
     std::string output_prefix = "city";
+    enum class ExportFormat { OBJ, GLTF, GLB };
+    ExportFormat export_format = ExportFormat::OBJ;
 
     // ===== Sanity checks =====
     void normalize() {
@@ -68,4 +70,12 @@ inline Config::TransportMode transportModeFromString(std::string s) {
         return Config::TransportMode::Walk;
 
     throw std::invalid_argument("Unknown transport mode: " + s);
+}
+
+inline Config::ExportFormat exportFormatFromString(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+    if (s == "obj") return Config::ExportFormat::OBJ;
+    if (s == "gltf") return Config::ExportFormat::GLTF;
+    if (s == "glb") return Config::ExportFormat::GLB;
+    throw std::invalid_argument("Unknown export format: " + s);
 }

@@ -5,6 +5,7 @@
 #include <string>
 #include <cstdlib>
 #include <filesystem>
+#include <stdexcept>
 
 /**
  * @brief Parse a command-line argument of the form --key=value.
@@ -49,6 +50,13 @@ int main(int argc, char **argv) {
             cfg.grid_size = static_cast<int>(std::strtol(s.c_str(), nullptr, 10));
         } else if (auto s = parseArg(arg, "--radius-fraction="); !s.empty()) {
             cfg.city_radius = std::strtod(s.c_str(), nullptr);
+        } else if (auto s = parseArg(arg, "--format="); !s.empty()) {
+            try {
+                cfg.export_format = exportFormatFromString(s);
+            } catch (const std::invalid_argument &e) {
+                std::cerr << e.what() << std::endl;
+                return 1;
+            }
         } else if (auto s = parseArg(arg, "--output="); !s.empty()) {
             outDir = s;
         } else if (arg == "--help" || arg == "-h") {
@@ -61,6 +69,7 @@ int main(int argc, char **argv) {
                       << "  --seed=<number>            RNG seed (default 0)\n"
                       << "  --grid-size=<number>       Width/height of the grid (default 100)\n"
                       << "  --radius-fraction=<float>  Fraction of half grid forming city radius (default 0.8)\n"
+                      << "  --format=<obj|gltf|glb>    Output mesh format (default obj)\n"
                       << "  --output=<dir>             Directory to output results (required)\n"
                       << std::endl;
             return 0;
@@ -79,9 +88,26 @@ int main(int argc, char **argv) {
     City city = CityGenerator::generate(cfg);
     // Save outputs
     std::string objPath = outDir + "/city.obj";
+    std::string gltfPath = outDir + "/city.gltf";
+    std::string glbPath = outDir + "/city.glb";
+    std::string modelPath;
     std::string summaryPath = outDir + "/city_summary.json";
-    city.saveOBJ(objPath);
+    switch (cfg.export_format) {
+        case Config::ExportFormat::OBJ:
+            city.saveOBJ(objPath);
+            modelPath = objPath;
+            break;
+        case Config::ExportFormat::GLB:
+            city.saveGLTF(glbPath, true);
+            modelPath = glbPath;
+            break;
+        case Config::ExportFormat::GLTF:
+        default:
+            city.saveGLTF(gltfPath, false);
+            modelPath = gltfPath;
+            break;
+    }
     city.saveSummary(summaryPath);
-    std::cout << "Generated city at: " << objPath << " and summary: " << summaryPath << std::endl;
+    std::cout << "Generated city at: " << modelPath << " and summary: " << summaryPath << std::endl;
     return 0;
 }

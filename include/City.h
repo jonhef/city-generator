@@ -134,15 +134,28 @@ public:
      *
      * Each parcel footprint is represented by a lightweight archetype:
      * generic parcels become extruded boxes, parks become low pads, and
-     * facilities use bespoke school/hospital forms.  Undeveloped parcels
-     * (None) are ignored.  The OBJ file contains vertices and triangular
-     * faces; materials are omitted for simplicity.  Note that building
-     * height is scaled by 1.0 unit per floor, but this can be adjusted by
-     * postprocessing.
+     * facilities use bespoke school/hospital forms.  A companion MTL file
+     * with zone-based colours is written alongside the OBJ and referenced
+     * via `mtllib`/`usemtl` statements.  Undeveloped parcels (None) are
+     * ignored.  Note that building height is scaled by 1.0 unit per floor,
+     * but this can be adjusted by postprocessing.
      *
      * @param filename Path to the OBJ file to create.
      */
     void saveOBJ(const std::string &filename) const;
+
+    /**
+     * @brief Write the city as a glTF 2.0 scene.
+     *
+     * Geometry, materials and roads are exported with a fixed Y‑up coordinate
+     * convention (X/Z ground plane, +Y up).  An optional binary GLB can be
+     * produced by passing binary=true; otherwise a JSON .gltf plus external
+     * .bin is written.
+     *
+     * @param filename Path to the output glTF (.gltf or .glb) file.
+     * @param binary If true, emit GLB; otherwise emit JSON + BIN pair.
+     */
+    void saveGLTF(const std::string &filename, bool binary = false) const;
 
     /**
      * @brief Write a JSON file summarising high‑level statistics of the city.
