@@ -25,11 +25,12 @@ called from Python code.
 """
 
 import argparse
+import json
 import subprocess
 import sys
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Mapping, Optional
 
 
 @dataclass
@@ -44,7 +45,65 @@ class CityConfig:
     output: str = "output"
 
 
-def generate(config: CityConfig) -> None:
+@dataclass
+class CitySummary:
+    """Structured representation of the generator's JSON summary."""
+
+    grid_size: int
+    total_buildings: int
+    residential_cells: int
+    commercial_cells: int
+    industrial_cells: int
+    green_cells: int
+    undeveloped_cells: int
+    num_hospitals: int
+    num_schools: int
+    max_distance_to_school: float
+    max_distance_to_hospital: float
+    max_residential_height: int
+    max_commercial_height: int
+    max_industrial_height: int
+
+    @classmethod
+    def from_mapping(cls, data: Mapping[str, object]) -> "CitySummary":
+        """Create a :class:`CitySummary` from the JSON mapping emitted by ``citygen``."""
+
+        return cls(
+            grid_size=int(data["gridSize"]),
+            total_buildings=int(data["totalBuildings"]),
+            residential_cells=int(data["residentialCells"]),
+            commercial_cells=int(data["commercialCells"]),
+            industrial_cells=int(data["industrialCells"]),
+            green_cells=int(data["greenCells"]),
+            undeveloped_cells=int(data["undevelopedCells"]),
+            num_hospitals=int(data["numHospitals"]),
+            num_schools=int(data["numSchools"]),
+            max_distance_to_school=float(data["maxDistanceToSchool"]),
+            max_distance_to_hospital=float(data["maxDistanceToHospital"]),
+            max_residential_height=int(data["maxResidentialHeight"]),
+            max_commercial_height=int(data["maxCommercialHeight"]),
+            max_industrial_height=int(data["maxIndustrialHeight"]),
+        )
+
+
+@dataclass
+class CityArtifacts:
+    """Container for all artefacts produced by a generation run."""
+
+    config: CityConfig
+    output_dir: Path
+    model_path: Path
+    summary_path: Path
+    summary: CitySummary
+
+
+def _load_summary(summary_path: Path) -> CitySummary:
+    with open(summary_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return CitySummary.from_mapping(data)
+
+
+def generate(config: CityConfig, *, as_objects: bool = False) -> Optional[CityArtifacts]:
     """Generate a city using the compiled ``citygen`` executable.
 
     Parameters
@@ -52,11 +111,24 @@ def generate(config: CityConfig) -> None:
     config : CityConfig
         Configuration for the city.  Fields correspond to command-line
         options accepted by ``citygen``.
+    as_objects : bool, optional
+        When ``True``, the generated summary is parsed into Python objects
+        (:class:`CitySummary` and :class:`CityArtifacts`) and returned.
+        When ``False`` (default), the function behaves as before and returns
+        ``None`` after writing files to disk.
+
+    Returns
+    -------
+    Optional[CityArtifacts]
+        A container with the parsed summary and output paths if
+        ``as_objects`` is ``True``; otherwise ``None``.
 
     Raises
     ------
     RuntimeError
         If the city generator executable returns a non-zero exit code.
+    FileNotFoundError
+        If the compiled ``citygen`` binary cannot be located.
     """
     exe = Path(__file__).resolve().parent.parent / "citygen"
     if not exe.exists():
@@ -78,6 +150,21 @@ def generate(config: CityConfig) -> None:
             f"citygen failed with code {result.returncode}:\n{result.stderr}"
         )
     print(result.stdout)
+    output_dir = Path(config.output)
+    model_path = output_dir / "city.obj"
+    summary_path = output_dir / "city_summary.json"
+
+    if as_objects:
+        summary = _load_summary(summary_path)
+        return CityArtifacts(
+            config=config,
+            output_dir=output_dir,
+            model_path=model_path,
+            summary_path=summary_path,
+            summary=summary,
+        )
+
+    return None
 
 
 def main(argv: Optional[list[str]] = None) -> None:

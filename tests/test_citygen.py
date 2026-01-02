@@ -31,6 +31,8 @@ EXECUTABLE = PROJECT_ROOT / "citygen"
 # available.  This must occur after PROJECT_ROOT is defined.
 sys.path.append(str(PROJECT_ROOT / "python"))
 
+from generate_city import CityArtifacts, CityConfig, CitySummary, generate
+
 
 def compile_generator():
     """
@@ -167,6 +169,36 @@ class TestCityGenerator(unittest.TestCase):
                              "Commercial height cap exceeded")
         self.assertLessEqual(data["maxIndustrialHeight"], 14,
                              "Industrial height cap exceeded")
+
+
+class TestPythonBindings(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        compile_generator()
+
+    @unittest.skipUnless(EXECUTABLE.exists(), "citygen executable not built")
+    def test_generate_returns_python_objects(self):
+        """The Python bindings can optionally return structured artefacts."""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cfg = CityConfig(
+                population=15000,
+                hospitals=1,
+                schools=2,
+                transport="car",
+                seed=11,
+                grid_size=60,
+                radius_fraction=0.75,
+                output=tmpdir,
+            )
+            artefacts = generate(cfg, as_objects=True)
+
+            self.assertIsInstance(artefacts, CityArtifacts)
+            self.assertEqual(Path(tmpdir), artefacts.output_dir)
+            self.assertIsInstance(artefacts.summary, CitySummary)
+            self.assertEqual(cfg.grid_size, artefacts.summary.grid_size)
+            self.assertTrue(artefacts.summary_path.exists())
+            self.assertTrue(artefacts.model_path.exists())
 
 
 if __name__ == '__main__':

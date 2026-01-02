@@ -5,4 +5,4 @@ citygen
 .DS_Store
 .vscode
 *.o
-__pycache__
+__pycache__/

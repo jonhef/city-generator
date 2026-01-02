@@ -76,6 +76,21 @@ generate(cfg)
 This will call the compiled executable behind the scenes and produce
 `my_city/city.obj` and `my_city/city_summary.json`.
 
+To work with the generator outputs directly in Python, pass
+``as_objects=True`` to ``generate``.  The function will parse the emitted
+``city_summary.json`` into a :class:`generate_city.CitySummary` instance and
+return a :class:`generate_city.CityArtifacts` container with the summary and
+output paths:
+
+```python
+from generate_city import CityConfig, generate
+
+cfg = CityConfig(output="my_city")
+artefacts = generate(cfg, as_objects=True)
+print(artefacts.summary.num_hospitals)
+print(artefacts.model_path)
+```
+
 ## Algorithm overview
 
 The generator discretises the city into a square grid of configurable
