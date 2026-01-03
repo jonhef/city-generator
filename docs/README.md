@@ -20,19 +20,29 @@ city_generator_project/
 ├── tests/          # Integration tests in Python
 ├── docs/           # User documentation (this file)
 ├── paper/          # LaTeX source for the accompanying research article
-└── Makefile        # Build script to compile the generator
+├── CMakeLists.txt  # CMake build configuration
+├── Dockerfile      # Reproducible build+test container
+└── Makefile        # Convenience wrapper that drives CMake/CTest
 ```
 
 ## Building
 
-To build the C++ generator, ensure you have a C++17 compiler installed
-(e.g., `clang++`) and simply run:
+The project is built with CMake. Ensure you have a C++17 compiler, CMake,
+and Python 3 available, then configure and build out-of-source:
 
 ```sh
-make
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
 ```
 
-This will produce an executable called `citygen` in the project root.
+This produces the `citygen` binary in the project root and copies
+`compile_commands.json` from the build tree for clangd/tooling. You can
+also use the wrapper targets:
+
+```sh
+make           # configure + build (Release by default)
+make test      # run the CTest suite
+```
 
 ## Usage
 
@@ -111,25 +121,15 @@ report.
 
 ## Testing
 
-The `tests` directory contains integration tests executed via Python's
-`unittest` framework.  To run the tests, simply execute:
+Tests are wired into CTest and execute the Python integration suite:
 
 ```sh
-python -m unittest discover -s tests -v
+ctest --test-dir build --output-on-failure
 ```
 
-The tests compile the generator (using the top‑level Makefile) and verify
-that:
-
-1. Running the generator with identical seeds yields exactly the same
-   summary (deterministic behaviour).
-2. The numbers of hospitals and schools in the summary match the
-   user‑supplied values.
-3. The total green space allocated meets or exceeds the recommended
-   minimum of 8 m² per inhabitant【26†L7-L10】.
-
-Feel free to add further tests to cover new functionality as the
-implementation evolves.
+The tests verify determinism, facility counts, green space allocation,
+accessibility constraints, and zoning height caps. Feel free to add
+further tests to cover new functionality as the implementation evolves.
 
 ## Extensibility
 
@@ -148,3 +148,15 @@ fledged simulator.  The modular C++ code can be extended in many ways:
   schools (500 m) or transit (800 m)【25†L825-L834】.
 
 Contributions and suggestions are welcome.
+
+## Docker build/test
+
+For a reproducible environment matching CI, you can build and test inside
+the provided container:
+
+```sh
+docker build .
+```
+
+The image installs the toolchain, configures with CMake, builds the
+project, and runs the full test suite automatically.
