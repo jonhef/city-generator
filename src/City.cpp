@@ -71,24 +71,6 @@ void writeQuadPrism(std::ofstream &ofs,
     vertexOffset += 8;
 }
 
-// Convenience helper to extrude an axis-aligned rectangle into a prism.
-void writeRectPrism(std::ofstream &ofs, const Rect &r,
-                    double baseZ, double topZ, std::size_t &vertexOffset) {
-    writeQuadPrism(ofs, rectToQuad(r), baseZ, topZ, vertexOffset);
-}
-
-// Inset a rectangle by a fixed amount, clamping so the rectangle never flips.
-Rect insetRect(const Rect &r, double inset) {
-    Rect out = r;
-    double maxInset = std::min(r.width(), r.height()) * 0.49;
-    double applied = std::clamp(inset, 0.0, maxInset);
-    out.x0 += applied;
-    out.x1 -= applied;
-    out.y0 += applied;
-    out.y1 -= applied;
-    return out;
-}
-
 // Extract filename component for mtllib usage.
 std::string filenameOnly(const std::string &path) {
     std::size_t pos = path.find_last_of("/\\");
@@ -124,13 +106,6 @@ static const MaterialDef kMaterialPalette[] = {
     {"mat_green", 0.3, 0.62, 0.34, 0.02, 12.0, 0.0, 0.7}, // vegetation
     {"mat_road", 0.15, 0.15, 0.15, 0.02, 12.0, 0.0, 0.8} // asphalt
 };
-
-const MaterialDef *findMaterialDef(const std::string &name) {
-    for (const auto &m : kMaterialPalette) {
-        if (name == m.name) return &m;
-    }
-    return nullptr;
-}
 
 // Material palette per zone/element.
 const char *materialForZone(ZoneType zone) {
